@@ -218,3 +218,13 @@
 **根因**：md-editor-v3 把 `md-editor-fullscreen` 类加在编辑器根元素上（fixed 定位 + left/right:0），但我为行宽约束写的 `.md-editor { max-width: 780px }` 在同一元素上依然生效——left/right 拉伸出的宽度被 max-width 钳回 780px（实测 w=780，视口 1440）。
 **修复**：`.md-editor.md-editor-fullscreen { max-width: none; border: none; border-radius: 0 }`，退出全屏后自动恢复 780px 居中布局。
 **复测**：进入全屏 1440×900 铺满 ✅ → 退出恢复 780px/8px 圆角 ✅
+
+---
+
+## 2026-11-04 02:1x · GitHub 推送完成 ✅
+
+- 用户已将公钥添加至 GitHub 账号，SSH 认证通过（Hi 0923zyc!）
+- 首次推送被拒：远端存在用户经网页上传的 6 个文件快照（Initial commit + Add files via upload）
+- 处理：`git merge origin/main --allow-unrelated-histories -s ours`（保留用户上传的提交历史，内容以本地完整版为准）→ 推送成功
+- 远端核实：34 个文件全部在位，关键文件（start.bat / server/src/seed.js / client/src/config/palettes.ts 等）完整
+- 仓库地址：https://github.com/0923zyc/TopNote
