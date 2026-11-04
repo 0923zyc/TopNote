@@ -1,0 +1,14 @@
+{
+  "name": "learning-notes-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "拾知笔记 - 本地学习笔记桌面应用（Vue3 + Express，纯本机运行）",
+  "scripts": {
+    "dev": "concurrently -k -n 后端,前端 -c blue,green \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "build": "npm --prefix client run build",
+    "start": "npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
