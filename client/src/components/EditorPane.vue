@@ -625,6 +625,13 @@ async function deleteCurrent() {
   --md-bk-color: var(--surface) !important;
 }
 
+/* 专注模式（页面全屏）时解除行宽与圆角限制，铺满整个窗口 */
+.md-editor.md-editor-fullscreen {
+  max-width: none;
+  border: none;
+  border-radius: 0;
+}
+
 /* Markdown 渲染细节（文档 6.5）：引用左色条、表格斑马纹、标题层级间距 */
 .md-editor :deep(.md-editor-preview-wrapper) {
   padding: 8px 20px;
