@@ -1,0 +1,16 @@
+# 依赖与构建产物
+node_modules/
+client/dist/
+
+# 本地运行时数据（笔记/回收站/备份/端口文件 —— 克隆后由服务端自动创建与种子化）
+data/
+server/.port
+
+# 系统与编辑器杂项
+*.log
+.DS_Store
+Thumbs.db
+
+# 会话与构建缓存
+.zcode/
+*.tsbuildinfo

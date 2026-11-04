@@ -1,0 +1,317 @@
+/**
+ * 拾知笔记 · 设计令牌与基础样式
+ *
+ * 设计原则（依据 Introduction.md 第六节 + app-screen 规范）：
+ * - 色彩只落在内容与关键动作上，框架保持安静（chrome 无彩色）
+ * - 表面扁平：分隔靠 1px 线或一档色调差，静态卡片不加阴影
+ * - 一个栅格一套间距；半径二选一：控件 6px / 卡片 8px（紧风格）
+ * - 星标金色是唯一的情感色；靛蓝是唯一的强调色
+ */
+
+:root {
+  /* 浅色主题（低饱和暖白，文档指定色板） */
+  --ground: #fafaf8;
+  --surface: #ffffff;
+  --sidebar: #f4f3ef;
+  --border: #e9e7e1;
+  --rule: #f1efea;
+  --control-border: #d8d5cd;
+
+  --ink: #2c2c2c;
+  --ink-secondary: #67635b;
+  --ink-faint: #75716a;
+
+  --accent: #5b6abf;
+  --accent-hover: #4d5cb2;
+  --accent-soft: #edeff8;
+  --accent-ink: #3f4c99;
+  --gold: #c7901c;
+  --gold-hover: #a97a12;
+
+  /* 主按钮：浅色下靛蓝底白字；深色下加深一档保证对比（白字 ≥ 4.5:1） */
+  --btn-bg: #5b6abf;
+  --btn-ink: #ffffff;
+
+  /* 副色（companion）：分类徽标、引用块等次级色彩层次；默认与主色同族 */
+  --companion: #5b6abf;
+  --companion-soft: #edeff8;
+  --companion-ink: #3f4c99;
+
+  --positive: #247b50;
+  --negative: #b3402f;
+  --error-bg: #fcefec;
+  --error-border: #f0c4bb;
+  --error-ink: #8c2f21;
+
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --radius-chip: 4px;
+
+  --shadow-popover: 0 8px 24px rgba(44, 42, 36, 0.12), 0 2px 6px rgba(44, 42, 36, 0.06);
+
+  --font: -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --fs-body: 15px;
+  --fs-title: 18px;
+}
+
+html.dark {
+  /* 深色主题：暖调近黑，同温层色阶；靛蓝提亮保证对比 */
+  --ground: #1c1b19;
+  --surface: #262421;
+  --sidebar: #201f1c;
+  --border: #35332e;
+  --rule: #2b2926;
+  --control-border: #4a4740;
+
+  --ink: #eceae3;
+  --ink-secondary: #b3afa5;
+  --ink-faint: #96928a;
+
+  --accent: #8b97e0;
+  --accent-hover: #9ca5e5;
+  --accent-soft: #2e3040;
+  --accent-ink: #a5afe8;
+  --gold: #e0b45c;
+  --gold-hover: #ecc47e;
+
+  --btn-bg: #47549e;
+  --btn-ink: #ffffff;
+
+  --companion: #8b97e0;
+  --companion-soft: #2e3040;
+  --companion-ink: #a5afe8;
+
+  --positive: #5dbb8a;
+  --negative: #e07a66;
+  --error-bg: #3a2620;
+  --error-border: #5c3a2e;
+  --error-ink: #f0a08d;
+
+  --shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ── 基础重置 ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--ground);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* 可访问性：键盘焦点可见 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* 数字列对齐（时间戳、计数） */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 用户头像式的省略截断 */
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 动效尊重系统偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Element Plus 对齐令牌 ───────────────────────────── */
+:root {
+  --el-color-primary: var(--accent);
+  --el-color-primary-light-3: var(--accent-hover);
+  --el-color-primary-light-5: var(--accent-soft);
+  --el-color-primary-light-7: var(--accent-soft);
+  --el-color-primary-light-8: var(--accent-soft);
+  --el-color-primary-light-9: var(--accent-soft);
+  --el-color-primary-dark-2: var(--accent-hover);
+  --el-border-radius-base: var(--radius-control);
+  --el-border-color: var(--control-border);
+  --el-border-color-light: var(--border);
+  --el-border-color-lighter: var(--rule);
+  --el-text-color-primary: var(--ink);
+  --el-text-color-regular: var(--ink-secondary);
+  --el-text-color-secondary: var(--ink-faint);
+  --el-fill-color-blank: var(--surface);
+  --el-fill-color-light: var(--rule);
+  --el-bg-color: var(--surface);
+  --el-bg-color-overlay: var(--surface);
+  --el-font-size-base: 14px;
+  --el-box-shadow-light: var(--shadow-popover);
+}
+
+html.dark {
+  color-scheme: dark;
+}
+html.light {
+  color-scheme: light;
+}
+
+/* ═══════════════════════════════════════════════════════
+   配色方案覆盖（Phase 9）
+   每套非默认色板两段：浅色 html[data-palette] 与深色
+   html.dark[data-palette]（后者特异性更高，压过 html.dark 基准）。
+   全部对比度按所在表面校验 ≥ 4.5:1（按钮/正文色）。
+   ═══════════════════════════════════════════════════════ */
+
+/* ── 克莱因蓝 × 驼棕 ─────────────────────────────────── */
+html[data-palette='klein'] {
+  --accent: #002fa7;
+  --accent-hover: #1b40c4;
+  --accent-soft: #e7ebf8;
+  --accent-ink: #1d34a6;
+  --btn-bg: #002fa7;
+  --btn-ink: #ffffff;
+  --companion: #8c5a2b;
+  --companion-soft: #f3ecdf;
+  --companion-ink: #6e4519;
+}
+
+html.dark[data-palette='klein'] {
+  --accent: #5b7ff0;
+  --accent-hover: #7291f3;
+  --accent-soft: #1c2a56;
+  --accent-ink: #93aaf0;
+  --btn-bg: #3b55c0;
+  --btn-ink: #ffffff;
+  --companion: #c08a4e;
+  --companion-soft: #322718;
+  --companion-ink: #d2a36b;
+}
+
+/* ── 森绿 × 亚麻 ─────────────────────────────────────── */
+html[data-palette='forest'] {
+  --accent: #2f6b4f;
+  --accent-hover: #275c43;
+  --accent-soft: #e3efe7;
+  --accent-ink: #23573f;
+  --btn-bg: #2f6b4f;
+  --btn-ink: #ffffff;
+  --companion: #8a6f35;
+  --companion-soft: #f2edda;
+  --companion-ink: #6d5626;
+}
+
+html.dark[data-palette='forest'] {
+  --accent: #6fbf98;
+  --accent-hover: #82ccb0;
+  --accent-soft: #1a2e23;
+  --accent-ink: #8fcdae;
+  --btn-bg: #2c5c44;
+  --btn-ink: #ffffff;
+  --companion: #cbb878;
+  --companion-soft: #2d2a1a;
+  --companion-ink: #d6c68f;
+}
+
+/* ── 勃艮第 × 鎏金 ───────────────────────────────────── */
+html[data-palette='burgundy'] {
+  --accent: #8c2f4a;
+  --accent-hover: #7a2740;
+  --accent-soft: #f5e7eb;
+  --accent-ink: #75253d;
+  --btn-bg: #8c2f4a;
+  --btn-ink: #ffffff;
+  --companion: #a0741f;
+  --companion-soft: #f5eeda;
+  --companion-ink: #7c5814;
+}
+
+html.dark[data-palette='burgundy'] {
+  --accent: #d9849a;
+  --accent-hover: #e296a9;
+  --accent-soft: #33212a;
+  --accent-ink: #e5a4b5;
+  --btn-bg: #a44a60;
+  --btn-ink: #ffffff;
+  --companion: #d4b36a;
+  --companion-soft: #332c18;
+  --companion-ink: #e0c78c;
+}
+
+/* ── 水墨 × 朱砂 ─────────────────────────────────────── */
+html[data-palette='ink'] {
+  --accent: #26282d;
+  --accent-hover: #3a3d45;
+  --accent-soft: #e9eaec;
+  --accent-ink: #26282d;
+  --btn-bg: #1d1f20;
+  --btn-ink: #ffffff;
+  --companion: #b03a2e;
+  --companion-soft: #f7e8e5;
+  --companion-ink: #96271c;
+}
+
+html.dark[data-palette='ink'] {
+  --accent: #e8e6e0;
+  --accent-hover: #f5f3ec;
+  --accent-soft: #2b2d33;
+  --accent-ink: #c9cbd1;
+  --btn-bg: #e8e6e0;
+  --btn-ink: #1c1b19;
+  --companion: #d96a5b;
+  --companion-soft: #37211d;
+  --companion-ink: #e89181;
+}
+
+/* ── 青瓷 × 赭石 ─────────────────────────────────────── */
+html[data-palette='celadon'] {
+  --accent: #2e7d6c;
+  --accent-hover: #276d5e;
+  --accent-soft: #e1efeb;
+  --accent-ink: #22604f;
+  --btn-bg: #2e7d6c;
+  --btn-ink: #ffffff;
+  --companion: #a06a28;
+  --companion-soft: #f4ecdb;
+  --companion-ink: #7c511c;
+}
+
+html.dark[data-palette='celadon'] {
+  --accent: #66c2ac;
+  --accent-hover: #79cfba;
+  --accent-soft: #16302a;
+  --accent-ink: #8ad4be;
+  --btn-bg: #236655;
+  --btn-ink: #ffffff;
+  --companion: #d0a45e;
+  --companion-soft: #32291a;
+  --companion-ink: #ddba79;
+}
