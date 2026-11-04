@@ -6,15 +6,27 @@ import { fileURLToPath } from 'node:url'
 import apiRouter from './routes.js'
 import { ensureDataDir, listNotes, cleanTrash, runBackup, DATA_DIR, TRASH_DIR, BACKUP_DIR } from './store.js'
 import { seedIfFresh } from './seed.js'
+import { readAsset } from './assets.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT_FILE = path.join(__dirname, '..', '.port')
 
 const app = express()
 app.disable('x-powered-by')
-app.use(express.json({ limit: '10mb' }))
+// 图片以 base64 dataURL 上传（约 1.33 倍膨胀），放宽到 15MB
+app.use(express.json({ limit: '15mb' }))
 
 app.use('/api', apiRouter)
+
+// 笔记图片静态服务：Markdown 中以 assets/xxx.png 相对路径引用
+app.get('/assets/:name', (req, res) => {
+  readAsset(req.params.name).then((asset) => {
+    if (!asset) return res.status(404).json({ error: '资源不存在' })
+    res.set('Content-Type', asset.contentType)
+    res.set('Cache-Control', 'public, max-age=31536000, immutable') // 文件名含时间戳，内容永不变
+    res.send(asset.data)
+  })
+})
 
 // 生产预览：若前端已构建（client/dist 存在）则直接托管，双击 start.bat 也能跑完整应用
 const clientDist = path.join(__dirname, '..', '..', 'client', 'dist')

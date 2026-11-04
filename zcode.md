@@ -228,3 +228,27 @@
 - 处理：`git merge origin/main --allow-unrelated-histories -s ours`（保留用户上传的提交历史，内容以本地完整版为准）→ 推送成功
 - 远端核实：34 个文件全部在位，关键文件（start.bat / server/src/seed.js / client/src/config/palettes.ts 等）完整
 - 仓库地址：https://github.com/0923zyc/TopNote
+
+---
+
+## 2026-11-04 23:5x · Phase 10 市场调研功能（用户选定 #2 图片本地化 + #5 每日回顾）✅
+
+### 调研背景
+用户要求调研市场笔记软件补充功能（Notion/Obsidian/Joplin/flomo/幕布等），给出分级清单，用户选定两项实施。
+
+### 交付 1：图片粘贴/拖拽本地化
+- 后端 `server/src/assets.js`：`POST /api/assets`（dataURL → 白名单校验 PNG/JPG/GIF/WebP/SVG → 8MB 上限 → 存 `data/notebook/assets/{ts}_{id}.ext`）；`GET /assets/:name` 静态服务（文件名白名单防穿越、immutable 缓存）
+- 备份自动包含图片（assets 在数据目录内，fs.cp recursive 覆盖）✅ 实测
+- Vite 代理扩展 `/assets`；生产模式 Express 直接托管
+- 前端：md-editor-v3 `@on-upload-img` 钩子统一处理**粘贴/拖拽/工具栏插图**三入口；超 8MB 前端拦截提示
+- **实测证据**：API 上传 201/字节一致/Content-Type 正确 ✅；非法类型 400 ✅；路径穿越拦截 ✅；备份含 assets ✅；**合成剪贴板粘贴事件 → 自动上传 → 插入 `![paste-test](assets/xxx.png)` → 已保存 → 预览 img 加载 image/png** 全链路 ✅
+
+### 交付 2：每日回顾（flomo 式）
+- 侧栏「每日回顾」入口 → 右栏回顾卡片流：随机洗牌抽 5 张**非今日**更新的旧笔记（不足回退全部），MdPreview 渲染全文
+- 操作：换一张（卡组内循环）/ 换一批（重新洗牌）/ 在编辑器中打开（自动退出回顾并选中）/ 退出回顾；点列表任意笔记也自动退出
+- 空状态、会话内详情缓存（每张只拉一次）
+- 过程修复：首张卡片"内容加载失败"——buildDeck 填充牌堆后 index 未变导致 watch 不触发 → buildDeck 末尾显式调用 loadCurrent ✅
+- **实测证据**：卡片渲染（元信息/标题/全文/引用块）✅ 换一张 2/2 ✅ 打开笔记自动退出 ✅
+
+### 质量关
+- vue-tsc 0 错误；后端 node --check 通过；生产构建通过；测试数据已清理（笔记/图片/回收站），仅剩 2 条种子笔记

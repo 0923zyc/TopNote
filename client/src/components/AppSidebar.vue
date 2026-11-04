@@ -82,6 +82,26 @@ const totalCount = computed(() => store.notes.filter((n) => !n.corrupt).length)
         <span class="nav__count num">{{ store.favoriteCount }}</span>
       </button>
 
+      <button
+        class="nav__item"
+        :class="{ 'is-active': store.reviewActive }"
+        type="button"
+        @click="store.toggleReview()"
+      >
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+          <path
+            d="M2.5 4.5h7.2M12.8 4.5h.7M2.5 8h1.2M6.3 8h7.2M2.5 11.5h4.6M10 11.5h3.5"
+            stroke="currentColor"
+            stroke-width="1.3"
+            stroke-linecap="round"
+          />
+          <circle cx="11.4" cy="4.5" r="1.5" fill="none" stroke="currentColor" stroke-width="1.3" />
+          <circle cx="4.7" cy="8" r="1.5" fill="none" stroke="currentColor" stroke-width="1.3" />
+          <circle cx="8.4" cy="11.5" r="1.5" fill="none" stroke="currentColor" stroke-width="1.3" />
+        </svg>
+        <span class="nav__label">每日回顾</span>
+      </button>
+
       <div class="nav__group">分类</div>
 
       <template v-if="store.categories.length">

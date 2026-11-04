@@ -35,6 +35,14 @@ export const useNotesStore = defineStore('notes', () => {
   const backupInfo = ref<BackupInfo | null>(null)
   const backupRunning = ref(false)
 
+  // ── 每日回顾（Phase 10）────────────────────────────
+  /** 回顾模式激活时，右栏显示回顾卡片流（选择笔记/新建会自动退出） */
+  const reviewActive = ref(false)
+
+  function toggleReview(on?: boolean) {
+    reviewActive.value = on ?? !reviewActive.value
+  }
+
   // ── 派生 ──────────────────────────────────────────────
   /** 所有出现过的分类（聚合自笔记列表） */
   const categories = computed(() => {
@@ -110,8 +118,9 @@ export const useNotesStore = defineStore('notes', () => {
     }
   }
 
-  /** 选中笔记：拉取全文详情 */
+  /** 选中笔记：拉取全文详情（进入回顾卡片时退出回顾模式） */
   async function selectNote(id: string) {
+    reviewActive.value = false
     if (currentId.value === id && currentDetail.value) return
     currentId.value = id
     currentDetail.value = null
@@ -137,6 +146,7 @@ export const useNotesStore = defineStore('notes', () => {
       const note = await notesApi.create({ content: '', ...preset })
       notes.value.unshift({ ...note, summary: '' })
       connectionError.value = null
+      reviewActive.value = false
       currentId.value = note.id
       currentDetail.value = note
       saveState.value = 'idle'
@@ -341,6 +351,7 @@ export const useNotesStore = defineStore('notes', () => {
     trashLoading,
     backupInfo,
     backupRunning,
+    reviewActive,
     // 派生
     categories,
     categoryCounts,
@@ -361,5 +372,6 @@ export const useNotesStore = defineStore('notes', () => {
     purgeFromTrash,
     loadBackupInfo,
     triggerBackup,
+    toggleReview,
   }
 })

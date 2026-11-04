@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import * as store from './store.js'
+import { saveAsset } from './assets.js'
 
 const router = Router()
 
@@ -146,6 +147,23 @@ router.post(
   '/backup',
   wrap(async (req, res) => {
     res.json(await store.runBackup())
+  })
+)
+
+// ── 图片资源 ─────────────────────────────────────────
+
+// POST /api/assets —— 上传图片（dataURL），返回 Markdown 引用路径
+router.post(
+  '/assets',
+  wrap(async (req, res) => {
+    try {
+      const result = await saveAsset(req.body?.image)
+      res.status(201).json(result)
+    } catch (err) {
+      const status = err?.status ?? 500
+      if (status === 500) console.error('[assets] 保存失败:', err)
+      res.status(status).json({ error: err.message })
+    }
   })
 )
 

@@ -10,6 +10,7 @@ import { notesApi } from '../api/notes'
 import { formatFull } from '../utils/format'
 import type { SaveState } from '../types'
 import WelcomeHero from './WelcomeHero.vue'
+import ReviewPane from './ReviewPane.vue'
 
 const store = useNotesStore()
 const { isDark } = useTheme()
@@ -29,6 +30,7 @@ const toolbars: ToolbarNames[] = [
   'codeRow',
   'code',
   'link',
+  'image',
   'table',
   '-',
   'catalog', // 大纲目录（长笔记导航）
@@ -38,6 +40,50 @@ const toolbars: ToolbarNames[] = [
   'pageFullscreen', // 专注模式
   'preview',
 ]
+
+// ── 图片本地化（粘贴 / 拖拽 / 工具栏统一入口）──────────
+const uploadingImg = ref(false)
+
+/** File → dataURL */
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.onerror = () => reject(new Error(`读取 ${file.name || '图片'} 失败`))
+    reader.readAsDataURL(file)
+  })
+}
+
+/**
+ * md-editor-v3 图片上传钩子：粘贴、拖拽、工具栏插图都走这里。
+ * 图片经后端落盘到 data/notebook/assets/，Markdown 引用相对路径 assets/xxx.png。
+ */
+async function onUploadImg(files: File[], callback: (urls: { url: string; alt: string }[]) => void) {
+  if (uploadingImg.value) return
+  uploadingImg.value = true
+  try {
+    const results: { url: string; alt: string }[] = []
+    for (const file of files) {
+      if (file.size > 8 * 1024 * 1024) {
+        ElMessage.error(`「${file.name || '图片'}」超过 8MB 上限`)
+        continue
+      }
+      const dataUrl = await fileToDataUrl(file)
+      const saved = await notesApi.uploadAsset(dataUrl)
+      results.push({ url: saved.url, alt: file.name.replace(/\.[a-z0-9]+$/i, '') || '图片' })
+    }
+    if (results.length === 0) {
+      ElMessage.warning('没有图片被保存')
+      return
+    }
+    callback(results)
+    ElMessage.success({ message: `已保存 ${results.length} 张图片到本地资源库`, grouping: true })
+  } catch (err) {
+    ElMessage.error(`图片保存失败：${err instanceof Error ? err.message : String(err)}`)
+  } finally {
+    uploadingImg.value = false
+  }
+}
 
 // ── 本地编辑态 ────────────────────────────────────────
 const titleInput = ref<HTMLInputElement | null>(null)
@@ -217,8 +263,11 @@ async function deleteCurrent() {
 
 <template>
   <section class="editor-pane">
+    <!-- 每日回顾模式：右栏被回顾卡片流占据 -->
+    <ReviewPane v-if="store.reviewActive" />
+
     <!-- 未选中：欢迎引导（文档 5.1 空状态引导） -->
-    <WelcomeHero v-if="!store.currentId" />
+    <WelcomeHero v-else-if="!store.currentId" />
 
     <template v-else>
       <!-- 详情加载中 -->
@@ -356,8 +405,8 @@ async function deleteCurrent() {
             preview-theme="github"
             :toolbars="toolbars"
             :footers="['markdownTotal']"
-            placeholder="从这里开始记录…"
-            no-upload-img
+            placeholder="从这里开始记录…（支持直接粘贴截图）"
+            @on-upload-img="onUploadImg"
             @blur="flushSave"
           />
         </div>

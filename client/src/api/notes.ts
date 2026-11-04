@@ -112,4 +112,14 @@ export const notesApi = {
       method: 'POST',
     })
   },
+
+  // ── 图片资源 ────────────────────────────────────────
+
+  /** 上传图片（dataURL），返回 Markdown 引用路径 assets/xxx.png */
+  uploadAsset(dataUrl: string): Promise<{ url: string; name: string; bytes: number }> {
+    return request<{ url: string; name: string; bytes: number }>('/assets', {
+      method: 'POST',
+      body: JSON.stringify({ image: dataUrl }),
+    })
+  },
 }

@@ -19,15 +19,16 @@ function readBackendPort(): number {
 }
 
 /**
- * /api 动态代理：后端端口可探测漂移（3001-3010），
+ * /api 与 /assets 动态代理：后端端口可探测漂移（3001-3010），
  * 每个请求实时读 .port 转发，前端代码完全不感知端口。
+ * /assets 是笔记图片的静态服务（Markdown 中以 assets/xxx.png 相对路径引用）。
  */
 function apiProxy(): Plugin {
   return {
     name: 'dynamic-api-proxy',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        if (!req.url || !req.url.startsWith('/api/')) return next()
+        if (!req.url || !(req.url.startsWith('/api/') || req.url.startsWith('/assets/'))) return next()
         const port = readBackendPort()
         const proxyReq = http.request(
           {
