@@ -209,3 +209,12 @@
 - **全新安装流程实测**：清空数据目录 → 启动 → 自动写入 2 篇欢迎笔记（欢迎笔记 favorited=true）✅
 - git 历史整理为单一干净提交 `dc43b9e`（v1.0 全量）；工作区干净
 - 修复后提交已包含在 v1.0 中，克隆即可运行
+
+---
+
+## 2026-11-04 01:5x · 用户反馈修复：专注模式无法全屏 ✅
+
+**现象**：点编辑器工具栏「浏览器全屏」（pageFullscreen）后编辑器仍是左侧一条，铺不满窗口。
+**根因**：md-editor-v3 把 `md-editor-fullscreen` 类加在编辑器根元素上（fixed 定位 + left/right:0），但我为行宽约束写的 `.md-editor { max-width: 780px }` 在同一元素上依然生效——left/right 拉伸出的宽度被 max-width 钳回 780px（实测 w=780，视口 1440）。
+**修复**：`.md-editor.md-editor-fullscreen { max-width: none; border: none; border-radius: 0 }`，退出全屏后自动恢复 780px 居中布局。
+**复测**：进入全屏 1440×900 铺满 ✅ → 退出恢复 780px/8px 圆角 ✅
