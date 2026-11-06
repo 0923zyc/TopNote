@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import * as store from './store.js'
 import { saveAsset } from './assets.js'
+import { streamExportZip, importFiles } from './exporter.js'
 
 const router = Router()
 
@@ -77,6 +78,16 @@ router.patch(
   '/notes/:id/favorite',
   wrap(async (req, res) => {
     const note = await store.toggleFavorite(req.params.id)
+    if (!note) return res.status(404).json({ error: `笔记不存在: ${req.params.id}` })
+    res.json(note)
+  })
+)
+
+// PATCH /api/notes/:id/pin —— 翻转置顶状态
+router.patch(
+  '/notes/:id/pin',
+  wrap(async (req, res) => {
+    const note = await store.togglePinned(req.params.id)
     if (!note) return res.status(404).json({ error: `笔记不存在: ${req.params.id}` })
     res.json(note)
   })
@@ -164,6 +175,26 @@ router.post(
       if (status === 500) console.error('[assets] 保存失败:', err)
       res.status(status).json({ error: err.message })
     }
+  })
+)
+
+// ── 导出 / 导入 ──────────────────────────────────────
+
+// GET /api/export/zip —— 整库导出为 zip（.md + frontmatter + assets）
+router.get(
+  '/export/zip',
+  wrap(async (req, res) => {
+    const count = await streamExportZip(res)
+    console.log(`[export] 已导出 ${count} 篇笔记`)
+  })
+)
+
+// POST /api/import —— 导入 Markdown 文件（含可选 frontmatter）
+router.post(
+  '/import',
+  wrap(async (req, res) => {
+    const result = await importFiles(req.body?.files)
+    res.json(result)
   })
 )
 

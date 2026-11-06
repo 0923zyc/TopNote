@@ -63,7 +63,17 @@ export const useNotesStore = defineStore('notes', () => {
 
   const favoriteCount = computed(() => notes.value.filter((n) => n.favorited && !n.corrupt).length)
 
-  /** 当前视图 + 搜索 + 排序叠加后的中栏列表（文档 5.2：搜索时筛选条件叠加生效） */
+  /** 标签 → 出现次数（降序） */
+  const tagCounts = computed(() => {
+    const map = new Map<string, number>()
+    for (const n of notes.value) {
+      if (n.corrupt) continue
+      for (const t of n.tags) map.set(t, (map.get(t) ?? 0) + 1)
+    }
+    return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-Hans-CN'))
+  })
+
+  /** 当前视图 + 搜索 + 排序叠加后的中栏列表（文档 5.2：搜索时筛选条件叠加生效；置顶优先） */
   const visibleNotes = computed(() => {
     let list = notes.value.slice()
     if (viewKind.value === 'favorites') list = list.filter((n) => n.favorited)
@@ -80,7 +90,11 @@ export const useNotesStore = defineStore('notes', () => {
       )
     }
     const key = sortBy.value
-    list.sort((a, b) => String(b[key]).localeCompare(String(a[key])))
+    list.sort(
+      (a, b) =>
+        Number(b.pinned ?? false) - Number(a.pinned ?? false) ||
+        String(b[key]).localeCompare(String(a[key]))
+    )
     return list
   })
 
@@ -220,6 +234,30 @@ export const useNotesStore = defineStore('notes', () => {
     }
   }
 
+  /** 置顶翻转：即时更新本地 + 落盘（不改动 updatedAt） */
+  async function togglePinned(id: string) {
+    const idx = notes.value.findIndex((n) => n.id === id)
+    if (idx < 0) return
+    const optimistic = !notes.value[idx].pinned
+    notes.value[idx] = { ...notes.value[idx], pinned: optimistic }
+    if (currentId.value === id && currentDetail.value) {
+      currentDetail.value = { ...currentDetail.value, pinned: optimistic }
+    }
+    try {
+      const saved = await notesApi.togglePinned(id)
+      const i = notes.value.findIndex((n) => n.id === id)
+      if (i >= 0) notes.value[i] = { ...notes.value[i], pinned: saved.pinned }
+      if (currentId.value === id && currentDetail.value) {
+        currentDetail.value = { ...currentDetail.value, pinned: saved.pinned }
+      }
+      connectionError.value = null
+    } catch (err) {
+      const i = notes.value.findIndex((n) => n.id === id)
+      if (i >= 0) notes.value[i] = { ...notes.value[i], pinned: !optimistic }
+      applyConnectionError(err)
+    }
+  }
+
   /** 删除笔记 = 移入回收站（调用方负责二次确认；可在回收站恢复） */
   async function removeNote(id: string) {
     try {
@@ -355,6 +393,7 @@ export const useNotesStore = defineStore('notes', () => {
     // 派生
     categories,
     categoryCounts,
+    tagCounts,
     favoriteCount,
     visibleNotes,
     currentNote,
@@ -365,6 +404,7 @@ export const useNotesStore = defineStore('notes', () => {
     createNote,
     saveCurrent,
     toggleFavorite,
+    togglePinned,
     removeNote,
     setView,
     loadTrash,

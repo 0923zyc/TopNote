@@ -1,13 +1,51 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, RefreshLeft, Upload } from '@element-plus/icons-vue'
 import { useNotesStore } from '../stores/notes'
 import { useUiStore } from '../stores/ui'
+import { notesApi } from '../api/notes'
 import { formatRelative } from '../utils/format'
 
 const store = useNotesStore()
 const ui = useUiStore()
+const fileInput = ref<HTMLInputElement | null>(null)
+const importing = ref(false)
+
+/** 导出全部笔记为 zip（后端附件下载） */
+function onExport() {
+  const a = document.createElement('a')
+  a.href = notesApi.EXPORT_ZIP_URL
+  a.download = ''
+  a.click()
+}
+
+/** 导入 .md 文件（前端读取文本后批量提交） */
+async function onImportFiles(e: Event) {
+  const input = e.target as HTMLInputElement
+  const files = Array.from(input.files ?? [])
+  input.value = '' // 允许重复选择同一文件
+  if (files.length === 0 || importing.value) return
+  importing.value = true
+  try {
+    const payload = await Promise.all(
+      files.map(async (f) => ({ name: f.name, content: await f.text() }))
+    )
+    const result = await notesApi.importFiles(payload)
+    await store.fetchNotes()
+    if (result.imported > 0) {
+      ElMessage.success(`已导入 ${result.imported} 篇笔记${result.failed ? `，${result.failed} 篇失败` : ''}`)
+    } else if (result.failed > 0) {
+      ElMessage.error(`导入失败 ${result.failed} 篇`)
+    } else {
+      ElMessage.warning('没有可导入的文件')
+    }
+  } catch (err) {
+    ElMessage.error(`导入失败：${err instanceof Error ? err.message : String(err)}`)
+  } finally {
+    importing.value = false
+  }
+}
 
 // 每次打开抽屉都重新拉取（删除/恢复后数据可能已变化）
 watch(
@@ -63,7 +101,7 @@ function clearDrawer() {
     @close="clearDrawer"
   >
     <div class="drawer-body">
-      <!-- 备份区 -->
+      <!-- 备份与导出/导入 -->
       <section class="backup-card">
         <div class="backup-card__row">
           <div class="backup-card__text">
@@ -76,16 +114,34 @@ function clearDrawer() {
               <template v-else>尚未生成备份</template>
             </p>
           </div>
-          <el-button
-            size="small"
-            :icon="Upload"
-            :loading="store.backupRunning"
-            @click="onBackup"
-          >
+          <el-button size="small" :icon="Upload" :loading="store.backupRunning" @click="onBackup">
             立即备份
           </el-button>
         </div>
         <p class="backup-card__hint">每 24 小时自动备份全部笔记到 data\backups\，保留最近 10 份</p>
+        <div class="backup-card__io">
+          <button class="io-btn" type="button" title="导出全部笔记为 zip（Markdown + frontmatter + 图片）" @click="onExport">
+            <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+              <path d="M8 2.5v7.2m0 0 2.8-2.8M8 9.7 5.2 6.9M3 11.5v1c0 .6.4 1 1 1h8c.6 0 1-.4 1-1v-1" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            导出全部 (.zip)
+          </button>
+          <button class="io-btn" type="button" title="从 .md 文件导入（支持 frontmatter）" @click="fileInput?.click()">
+            <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+              <path d="M8 9.7V2.5m0 0L5.2 5.3M8 2.5l2.8 2.8M3 11.5v1c0 .6.4 1 1 1h8c.6 0 1-.4 1-1v-1" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            导入 Markdown
+          </button>
+          <input
+            ref="fileInput"
+            class="io-input"
+            type="file"
+            accept=".md,.markdown,.txt"
+            multiple
+            @change="onImportFiles"
+          />
+        </div>
+        <p class="backup-card__hint">导出的 zip 可直接拖进 Obsidian；导入会新建笔记，不会覆盖已有内容</p>
       </section>
 
       <!-- 回收站列表 -->
@@ -161,6 +217,37 @@ function clearDrawer() {
   font-size: 12px;
   line-height: 1.5;
   color: var(--ink-faint);
+}
+
+.backup-card__io {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.io-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 30px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.io-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.io-input {
+  display: none;
 }
 
 .section-label {

@@ -7,6 +7,8 @@ export interface NoteMeta {
   category: string | null
   tags: string[]
   favorited: boolean
+  /** 置顶（列表优先显示） */
+  pinned?: boolean
   createdAt: string
   updatedAt: string
   /** 损坏文件占位条目 */

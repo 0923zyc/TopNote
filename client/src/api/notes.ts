@@ -122,4 +122,27 @@ export const notesApi = {
       body: JSON.stringify({ image: dataUrl }),
     })
   },
+
+  // ── 置顶 ────────────────────────────────────────────
+
+  togglePinned(id: string): Promise<NoteDetail> {
+    return request<NoteDetail>(`/notes/${encodeURIComponent(id)}/pin`, { method: 'PATCH' })
+  },
+
+  // ── 导出 / 导入 ─────────────────────────────────────
+
+  /** 整库导出地址（GET 附件下载，走同一相对路径与代理） */
+  EXPORT_ZIP_URL: '/api/export/zip',
+
+  /** 导入 Markdown 文件（含可选 frontmatter），返回统计 */
+  importFiles(files: { name: string; content: string }[]): Promise<{
+    imported: number
+    failed: number
+    errors: { name: string; error: string }[]
+  }> {
+    return request<{ imported: number; failed: number; errors: { name: string; error: string }[] }>(
+      '/import',
+      { method: 'POST', body: JSON.stringify({ files }) }
+    )
+  },
 }

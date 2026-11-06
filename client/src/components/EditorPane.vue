@@ -221,9 +221,13 @@ async function removeTag(tag: string) {
   await store.saveCurrent({ tags: store.currentDetail.tags.filter((x) => x !== tag) })
 }
 
-// ── 收藏 / 删除 / 导出 ────────────────────────────────
+// ── 收藏 / 置顶 / 删除 / 导出 ─────────────────────────
 function toggleFav() {
   if (store.currentId) store.toggleFavorite(store.currentId)
+}
+
+function togglePin() {
+  if (store.currentId) store.togglePinned(store.currentId)
 }
 
 /** 导出当前笔记为 .md 文件（带走数据） */
@@ -301,6 +305,24 @@ async function deleteCurrent() {
                 <template v-else-if="saveStateLocal === 'saved'">已保存</template>
                 <template v-else-if="saveStateLocal === 'error'">保存失败</template>
               </span>
+              <button
+                class="icon-btn"
+                :class="{ 'is-on': store.currentDetail.pinned }"
+                type="button"
+                :title="store.currentDetail.pinned ? '取消置顶' : '置顶'"
+                :aria-label="store.currentDetail.pinned ? '取消置顶' : '置顶'"
+                @click="togglePin"
+              >
+                <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+                  <path
+                    d="M9.6 2.2l4.2 4.2-2.4 1-1.3 3.2-2-2-4.5 4.5-.7-.7 4.5-4.5-2-2 3.2-1.3 1-2.4z"
+                    :fill="store.currentDetail.pinned ? 'currentColor' : 'none'"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
               <button
                 class="icon-btn"
                 :class="{ 'is-on': store.currentDetail.favorited }"

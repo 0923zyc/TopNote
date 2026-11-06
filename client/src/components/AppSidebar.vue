@@ -127,6 +127,32 @@ const totalCount = computed(() => store.notes.filter((n) => !n.corrupt).length)
         </button>
       </template>
       <div v-else class="nav__empty">尚无分类，编辑笔记时可新建</div>
+
+      <template v-if="store.tagCounts.length">
+        <div class="nav__group">标签</div>
+        <button
+          v-for="[tag, count] in store.tagCounts.slice(0, 15)"
+          :key="tag"
+          class="nav__item"
+          :class="{ 'is-active': store.searchQuery === tag }"
+          type="button"
+          :title="`筛选标签「${tag}」`"
+          @click="store.searchQuery = store.searchQuery === tag ? '' : tag"
+        >
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+            <path
+              d="m8.6 2.5 4.9 4.9a1.2 1.2 0 0 1 0 1.7l-4.4 4.4a1.2 1.2 0 0 1-1.7 0L2.5 8.6V3.7c0-.7.5-1.2 1.2-1.2h4.9Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linejoin="round"
+            />
+            <circle cx="5.6" cy="5.6" r="0.9" fill="currentColor" />
+          </svg>
+          <span class="nav__label ellipsis">{{ tag }}</span>
+          <span class="nav__count num">{{ count }}</span>
+        </button>
+      </template>
     </nav>
 
     <div class="sidebar__foot">

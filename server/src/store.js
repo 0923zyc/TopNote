@@ -92,6 +92,7 @@ function normalize(input, { partial = false } = {}) {
       : []
   }
   if (!partial || 'favorited' in input) out.favorited = Boolean(input.favorited)
+  if (!partial || 'pinned' in input) out.pinned = Boolean(input.pinned)
   return out
 }
 
@@ -202,12 +203,17 @@ function listSummaries() {
           category: n.category,
           tags: n.tags,
           favorited: n.favorited,
+          pinned: n.pinned,
           createdAt: n.createdAt,
           updatedAt: n.updatedAt,
         }
   })
-  // 默认按 updatedAt 降序（文档 5.2），列表接口统一排序，前端可改
-  items.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
+  // 置顶优先，其余按 updatedAt 降序（文档 5.2）
+  items.sort(
+    (a, b) =>
+      Number(b.pinned ?? false) - Number(a.pinned ?? false) ||
+      String(b.updatedAt).localeCompare(String(a.updatedAt))
+  )
   return items
 }
 
@@ -291,6 +297,22 @@ export async function toggleFavorite(id) {
   if (e.corrupt) return { ...e.note }
   const note = { ...e.note, favorited: !e.note.favorited, updatedAt: new Date().toISOString() }
   return persist(id, note)
+}
+
+/** 置顶翻转（组织操作，不刷新 updatedAt 以免打乱时间序） */
+export async function togglePinned(id) {
+  await ensureFresh()
+  const e = cache.get(id)
+  if (!e) return null
+  if (e.corrupt) return { ...e.note }
+  const note = { ...e.note, pinned: !e.note.pinned }
+  return persist(id, note)
+}
+
+/** 全量笔记（含 content 全文）—— 导出用 */
+export async function listFull() {
+  await ensureFresh()
+  return [...cache.values()].filter((e) => !e.corrupt).map((e) => ({ ...e.note }))
 }
 
 export async function listCategories() {

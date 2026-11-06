@@ -31,6 +31,10 @@ npm run dev        # 同时启动后端(3001)与前端(5173)
 - **专注模式**：编辑器页面级全屏，沉浸写作
 - **图片本地化**：截图直接粘贴或拖入编辑器，落盘 `data/notebook/assets/`，Markdown 以 `assets/xxx.png` 相对路径引用（随备份打包）
 - **每日回顾**：随机抽 5 张旧笔记做成卡片流，换一张/换一批/一键打开，对抗"记了就忘"
+- **置顶笔记**：图钉一键置顶，列表优先显示（不改动时间序）
+- **标签面板**：侧栏标签聚合 + 计数，点击即筛选
+- **全量导出**：整库打包 zip（Markdown + YAML frontmatter + assets 图片），可直接拖进 Obsidian
+- **Markdown 导入**：批量导入 .md（自动解析 frontmatter），只新增不覆盖
 - **导出**：一键把当前笔记下载为 `.md` 文件
 - **回收站**：删除先进回收站（保留 30 天），随时恢复或彻底删除
 - **自动备份**：启动与每 24 小时全量快照到 `data\backups\`，保留最近 10 份，可手动立即备份
@@ -78,6 +82,10 @@ npm run dev        # 同时启动后端(3001)与前端(5173)
 | POST | `/api/trash/:id/restore` | 从回收站恢复 |
 | DELETE | `/api/trash/:id` | 彻底删除（不可恢复） |
 | GET/POST | `/api/backup` | 备份信息 / 立即备份 |
+| POST | `/api/assets` | 上传图片（dataURL） |
+| PATCH | `/api/notes/:id/pin` | 翻转置顶 |
+| GET | `/api/export/zip` | 整库导出 zip（Obsidian 兼容） |
+| POST | `/api/import` | 批量导入 Markdown |
 
 端口被占时自动向后探测至 3010，实际端口写入 `server/.port`。
 

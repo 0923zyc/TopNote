@@ -79,6 +79,22 @@ async function onDeleteCorrupt(id: string) {
         @keydown.enter="store.selectNote(note.id)"
       >
         <div class="note-item__head">
+          <svg
+            v-if="note.pinned"
+            class="note-item__pin"
+            viewBox="0 0 16 16"
+            width="12"
+            height="12"
+            aria-hidden="true"
+          >
+            <path
+              d="M9.6 2.2l4.2 4.2-2.4 1-1.3 3.2-2-2-4.5 4.5-.7-.7 4.5-4.5-2-2 3.2-1.3 1-2.4z"
+              fill="currentColor"
+              stroke="currentColor"
+              stroke-width="1"
+              stroke-linejoin="round"
+            />
+          </svg>
           <h3 class="note-item__title ellipsis">{{ note.corrupt ? '⚠ 文件损坏' : note.title || '无标题笔记' }}</h3>
           <button
             v-if="!note.corrupt"
@@ -295,6 +311,12 @@ async function onDeleteCorrupt(id: string) {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.note-item__pin {
+  flex: none;
+  color: var(--accent);
+  transform: rotate(0deg);
 }
 
 .note-item__title {
