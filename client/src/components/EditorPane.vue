@@ -11,6 +11,7 @@ import { formatFull } from '../utils/format'
 import type { SaveState } from '../types'
 import WelcomeHero from './WelcomeHero.vue'
 import ReviewPane from './ReviewPane.vue'
+import StatsPane from './StatsPane.vue'
 
 const store = useNotesStore()
 const { isDark } = useTheme()
@@ -269,6 +270,9 @@ async function deleteCurrent() {
   <section class="editor-pane">
     <!-- 每日回顾模式：右栏被回顾卡片流占据 -->
     <ReviewPane v-if="store.reviewActive" />
+
+    <!-- 统计面板：热力图 + 月历 -->
+    <StatsPane v-else-if="store.statsActive" />
 
     <!-- 未选中：欢迎引导（文档 5.1 空状态引导） -->
     <WelcomeHero v-else-if="!store.currentId" />

@@ -43,6 +43,73 @@ export const useNotesStore = defineStore('notes', () => {
     reviewActive.value = on ?? !reviewActive.value
   }
 
+  // ── 统计面板 与 日期筛选（Phase 12）────────────────
+  const statsActive = ref(false)
+  /** 日期筛选（YYYY-MM-DD）：点热力图/日历后中栏只看当天更新的笔记 */
+  const dateFilter = ref<string | null>(null)
+
+  function toggleStats(on?: boolean) {
+    statsActive.value = on ?? !statsActive.value
+    if (statsActive.value) reviewActive.value = false
+  }
+
+  function setDateFilter(day: string | null) {
+    dateFilter.value = day
+    if (day) {
+      statsActive.value = false
+      reviewActive.value = false
+    }
+  }
+
+  /** 全库总字数（服务端聚合全文长度，约束 #4：列表不传全文） */
+  const totalChars = ref(0)
+
+  async function loadStats() {
+    try {
+      const s = await notesApi.stats()
+      totalChars.value = s.totalChars
+    } catch {
+      /* 统计加载失败不打扰 */
+    }
+  }
+
+  /** 每日笔记：今天已有日记则打开，否则按模板创建（Obsidian Daily Notes 行为） */
+  async function openDailyNote(): Promise<boolean> {    const today = new Date()
+    const todayStr = today.toDateString()
+    const existing = notes.value.find(
+      (n) => !n.corrupt && n.category === '日记' && new Date(n.createdAt).toDateString() === todayStr
+    )
+    if (existing) {
+      await selectNote(existing.id)
+      return true
+    }
+    const p = (x: number) => String(x).padStart(2, '0')
+    const ymd = `${today.getFullYear()}-${p(today.getMonth() + 1)}-${p(today.getDate())}`
+    const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+    const note = await createNote({
+      title: `${ymd} · ${weekdays[today.getDay()]}`,
+      category: '日记',
+      tags: ['日记'],
+      content: '## 今日所学\n\n\n\n## 疑问与卡点\n\n\n\n## 明日计划\n',
+    })
+    return note !== null
+  }
+
+  /** 当日（本地时区）活跃天数 → 更新的笔记数；供热力图与月历 */
+  const dailyCounts = computed(() => {
+    const map = new Map<string, number>()
+    for (const n of notes.value) {
+      if (n.corrupt) continue
+      const d = new Date(n.updatedAt)
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      map.set(key, (map.get(key) ?? 0) + 1)
+    }
+    return map
+  })
+
+  /** 全库总字数（含空格，与编辑器字数口径一致） */
+  // 改用服务端聚合：GET /api/stats（列表接口不含全文，约束 #4）
+
   // ── 派生 ──────────────────────────────────────────────
   /** 所有出现过的分类（聚合自笔记列表） */
   const categories = computed(() => {
@@ -95,6 +162,14 @@ export const useNotesStore = defineStore('notes', () => {
         Number(b.pinned ?? false) - Number(a.pinned ?? false) ||
         String(b[key]).localeCompare(String(a[key]))
     )
+    // 日期筛选（点热力图/月历后查看某天更新的笔记）
+    if (dateFilter.value) {
+      list = list.filter((n) => {
+        const d = new Date(n.updatedAt)
+        const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        return k === dateFilter.value
+      })
+    }
     return list
   })
 
@@ -155,7 +230,7 @@ export const useNotesStore = defineStore('notes', () => {
   }
 
   /** 新建笔记：立即落盘并选中，进入编辑态 */
-  async function createNote(preset: Partial<Pick<NoteDetail, 'title' | 'category' | 'tags'>> = {}) {
+  async function createNote(preset: Partial<Pick<NoteDetail, 'title' | 'content' | 'category' | 'tags'>> = {}) {
     try {
       const note = await notesApi.create({ content: '', ...preset })
       notes.value.unshift({ ...note, summary: '' })
@@ -390,6 +465,10 @@ export const useNotesStore = defineStore('notes', () => {
     backupInfo,
     backupRunning,
     reviewActive,
+    statsActive,
+    dateFilter,
+    totalChars,
+    dailyCounts,
     // 派生
     categories,
     categoryCounts,
@@ -413,5 +492,9 @@ export const useNotesStore = defineStore('notes', () => {
     loadBackupInfo,
     triggerBackup,
     toggleReview,
+    toggleStats,
+    setDateFilter,
+    loadStats,
+    openDailyNote,
   }
 })

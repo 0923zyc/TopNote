@@ -102,6 +102,26 @@ const totalCount = computed(() => store.notes.filter((n) => !n.corrupt).length)
         <span class="nav__label">每日回顾</span>
       </button>
 
+      <button class="nav__item" type="button" title="打开或创建今天的日记" @click="store.openDailyNote()">
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+          <rect x="2.5" y="3.5" width="11" height="10" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3" />
+          <path d="M2.5 6.5h11M5.5 2v2M10.5 2v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+        </svg>
+        <span class="nav__label">今日日记</span>
+      </button>
+
+      <button
+        class="nav__item"
+        :class="{ 'is-active': store.statsActive }"
+        type="button"
+        @click="store.toggleStats()"
+      >
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+          <path d="M3 13.5V8.5M8 13.5v-11M13 13.5V5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        <span class="nav__label">统计</span>
+      </button>
+
       <div class="nav__group">分类</div>
 
       <template v-if="store.categories.length">

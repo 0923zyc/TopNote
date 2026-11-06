@@ -64,6 +64,14 @@ async function onDeleteCorrupt(id: string) {
       <template v-else-if="store.viewKind === 'category'">{{ store.activeCategory }}</template>
       <template v-else>全部笔记</template>
       <span class="list-context__count num">{{ store.visibleNotes.length }}</span>
+      <span v-if="store.dateFilter" class="list-context__date num" :title="'仅显示 ' + store.dateFilter + ' 更新的笔记'">
+        <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
+          <rect x="2.5" y="3.5" width="11" height="10" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3" />
+          <path d="M2.5 6.5h11M5.5 2v2M10.5 2v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+        </svg>
+        {{ store.dateFilter }}
+        <button type="button" class="list-context__clear" aria-label="清除日期筛选" @click="store.setDateFilter(null)">×</button>
+      </span>
     </div>
 
     <!-- 列表 -->
@@ -277,6 +285,30 @@ async function onDeleteCorrupt(id: string) {
 
 .list-context__count {
   color: var(--ink-secondary);
+}
+
+.list-context__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: var(--radius-chip);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.list-context__clear {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 1px;
+}
+
+.list-context__clear:hover {
+  color: var(--negative);
 }
 
 .note-list {

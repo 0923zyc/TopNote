@@ -129,6 +129,12 @@ export const notesApi = {
     return request<NoteDetail>(`/notes/${encodeURIComponent(id)}/pin`, { method: 'PATCH' })
   },
 
+  // ── 统计 ────────────────────────────────────────────
+
+  stats(): Promise<{ noteCount: number; totalChars: number }> {
+    return request<{ noteCount: number; totalChars: number }>('/stats')
+  },
+
   // ── 导出 / 导入 ─────────────────────────────────────
 
   /** 整库导出地址（GET 附件下载，走同一相对路径与代理） */

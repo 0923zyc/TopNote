@@ -6,10 +6,19 @@ import AppSidebar from './components/AppSidebar.vue'
 import NoteList from './components/NoteList.vue'
 import EditorPane from './components/EditorPane.vue'
 import TrashDrawer from './components/TrashDrawer.vue'
+import CommandPalette from './components/CommandPalette.vue'
+import { useUiStore } from './stores/ui'
 
 const store = useNotesStore()
+const ui = useUiStore()
 
 function onKeydown(e: KeyboardEvent) {
+  // Ctrl/Cmd + K 命令面板
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault()
+    ui.toggleCommandPalette()
+    return
+  }
   // Ctrl/Cmd + N 新建笔记（浏览器可能拦截，仅尽力而为）
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
     e.preventDefault()
@@ -50,6 +59,7 @@ onBeforeUnmount(() => {
     </div>
 
     <TrashDrawer />
+    <CommandPalette />
   </div>
 </template>
 

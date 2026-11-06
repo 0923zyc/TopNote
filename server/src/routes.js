@@ -178,6 +178,18 @@ router.post(
   })
 )
 
+// GET /api/stats —— 全库统计（总字数等需要全文聚合的指标）
+router.get(
+  '/stats',
+  wrap(async (req, res) => {
+    const notes = await store.listFull()
+    res.json({
+      noteCount: notes.length,
+      totalChars: notes.reduce((s, n) => s + String(n.content ?? '').length, 0),
+    })
+  })
+)
+
 // ── 导出 / 导入 ──────────────────────────────────────
 
 // GET /api/export/zip —— 整库导出为 zip（.md + frontmatter + assets）
