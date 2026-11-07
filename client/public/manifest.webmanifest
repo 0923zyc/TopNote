@@ -1,0 +1,17 @@
+{
+  "name": "拾知笔记 TopNote",
+  "short_name": "拾知笔记",
+  "description": "本地学习笔记应用 —— Markdown、分类标签、回收站、自动备份",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#5B6ABF",
+  "theme_color": "#5B6ABF",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

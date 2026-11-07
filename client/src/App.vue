@@ -7,6 +7,7 @@ import NoteList from './components/NoteList.vue'
 import EditorPane from './components/EditorPane.vue'
 import TrashDrawer from './components/TrashDrawer.vue'
 import CommandPalette from './components/CommandPalette.vue'
+import SplashScreen from './components/SplashScreen.vue'
 import { useUiStore } from './stores/ui'
 
 const store = useNotesStore()
@@ -43,6 +44,9 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="app-shell">
+    <!-- 启动动画（Logo 描绘 → 后端就绪后淡出） -->
+    <SplashScreen />
+
     <!-- 顶部错误条：后端未启动 / 数据目录不可写（文档 5.3） -->
     <div v-if="store.connectionError" class="error-bar" role="alert">
       <span class="error-bar__text">{{ store.connectionError }}</span>

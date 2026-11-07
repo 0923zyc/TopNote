@@ -55,6 +55,10 @@ function apiProxy(): Plugin {
 
 export default defineConfig({
   plugins: [vue(), apiProxy()],
+  build: {
+    // 构建产物放 static/，避免与笔记图片目录 /assets 冲突（生产模式由 Express 同源托管）
+    assetsDir: 'static',
+  },
   server: {
     host: '127.0.0.1',
     port: 5173,
