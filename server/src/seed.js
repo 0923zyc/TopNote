@@ -30,9 +30,9 @@ export async function seedIfFresh() {
   }
 
   await createNote({
-    title: '欢迎使用拾知笔记',
+    title: '欢迎使用TopNote',
     favorited: true,
-    content: `欢迎使用 **拾知笔记** —— 一个只属于你的本地学习笔记应用。
+    content: `欢迎使用 **TopNote** —— 一个只属于你的本地学习笔记应用。
 
 ## 30 秒上手
 

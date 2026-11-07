@@ -36,7 +36,7 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
 <template>
   <div v-if="!gone" class="splash" :class="{ 'is-leaving': leaving }">
     <div class="splash__stage">
-      <!-- Logo：主色描边 → 主色填充 → 底色拾 字浮现 -->
+      <!-- Logo：主色描边 → 主色填充 → 底色 TN 字标浮现 -->
       <svg class="splash__logo" viewBox="0 0 32 32" width="84" height="84">
         <rect
           class="splash__logo-frame"
@@ -56,18 +56,19 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
           y="17"
           text-anchor="middle"
           dominant-baseline="central"
-          font-size="16"
-          font-weight="600"
+          font-size="11.5"
+          font-weight="800"
+          letter-spacing="-0.5"
           font-family="inherit"
           fill="var(--ground)"
         >
-          拾
+          TN
         </text>
       </svg>
 
       <div class="splash__name">
-        <span class="splash__name-cn">拾知笔记</span>
-        <span class="splash__name-en num">TopNote</span>
+        <span class="splash__name-cn">TopNote</span>
+        <span class="splash__name-en num">本地学习笔记</span>
       </div>
 
       <!-- 今日名言（与欢迎页同源，按日期轮换） -->
@@ -115,7 +116,7 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
   padding: 0 24px;
 }
 
-/* Logo 动画：主色描边 → 主色填充 → 底色拾 字浮现 */
+/* Logo 动画：主色描边 → 主色填充 → 底色 TN 字标浮现 */
 .splash__logo-frame {
   stroke-dasharray: 100;
   stroke-dashoffset: 100;

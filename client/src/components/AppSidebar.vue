@@ -23,15 +23,16 @@ const totalCount = computed(() => store.notes.filter((n) => !n.corrupt).length)
           y="17"
           text-anchor="middle"
           dominant-baseline="central"
-          font-size="16"
-          font-weight="600"
+          font-size="11"
+          font-weight="800"
+          letter-spacing="-0.5"
           font-family="inherit"
           fill="var(--ground)"
         >
-          拾
+          TN
         </text>
       </svg>
-      <div class="brand__name">拾知笔记</div>
+      <div class="brand__name">TopNote</div>
     </div>
 
     <!-- 主行动：新建 -->

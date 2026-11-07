@@ -95,7 +95,7 @@ async function main() {
   maintenanceTimer.unref?.()
 
   console.log('──────────────────────────────────────────────')
-  console.log('  拾知笔记后端已启动')
+  console.log('  TopNote后端已启动')
   console.log(`  地址:     http://127.0.0.1:${port}`)
   console.log(`  数据目录: ${dir}`)
   console.log(`  回收站:   ${TRASH_DIR}`)

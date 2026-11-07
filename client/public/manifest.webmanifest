@@ -1,6 +1,6 @@
 {
-  "name": "拾知笔记 TopNote",
-  "short_name": "拾知笔记",
+  "name": "TopNote —— 本地学习笔记",
+  "short_name": "TopNote",
   "description": "本地学习笔记应用 —— Markdown、分类标签、回收站、自动备份",
   "start_url": "/",
   "display": "standalone",
