@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { useNotesStore } from '../stores/notes'
+import { getDailyQuote } from '../config/quotes'
 
 const store = useNotesStore()
 
-/** 最短展示时长（让动画完整播完） */
-const MIN_MS = 1700
+/** 最短展示时长（让动画与今日名言完整呈现） */
+const MIN_MS = 2900
 /** 淡出动画时长 */
 const FADE_MS = 500
 
 const minDone = ref(false)
 const leaving = ref(false)
 const gone = ref(false)
+
+const dailyQuote = getDailyQuote()
 
 onMounted(() => {
   setTimeout(() => {
@@ -33,7 +36,7 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
 <template>
   <div v-if="!gone" class="splash" :class="{ 'is-leaving': leaving }">
     <div class="splash__stage">
-      <!-- Logo：圆角方框描绘 → 填充 → 拾 字浮现（仿 Z 启动时刻） -->
+      <!-- Logo：主色描边 → 主色填充 → 底色拾 字浮现 -->
       <svg class="splash__logo" viewBox="0 0 32 32" width="84" height="84">
         <rect
           class="splash__logo-frame"
@@ -43,7 +46,7 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
           height="28"
           rx="8"
           fill="var(--btn-bg)"
-          stroke="#ffffff"
+          stroke="var(--accent)"
           stroke-width="1.6"
           pathLength="100"
         />
@@ -56,7 +59,7 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
           font-size="16"
           font-weight="600"
           font-family="inherit"
-          fill="var(--btn-bg)"
+          fill="var(--ground)"
         >
           拾
         </text>
@@ -66,6 +69,12 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
         <span class="splash__name-cn">拾知笔记</span>
         <span class="splash__name-en num">TopNote</span>
       </div>
+
+      <!-- 今日名言（与欢迎页同源，按日期轮换） -->
+      <figure class="splash__quote">
+        <blockquote>{{ dailyQuote.text }}</blockquote>
+        <figcaption>—— {{ dailyQuote.author }}</figcaption>
+      </figure>
 
       <!-- 进度细线 -->
       <div class="splash__bar">
@@ -89,7 +98,8 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--btn-bg);
+  /* 背景跟随主题主色：浅色主题=暖白，深色主题=暖黑 */
+  background: var(--ground);
   transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 
@@ -102,9 +112,10 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0 24px;
 }
 
-/* Logo 动画：描边 → 填充 → 字浮现 */
+/* Logo 动画：主色描边 → 主色填充 → 底色拾 字浮现 */
 .splash__logo-frame {
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
@@ -119,7 +130,7 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
 
 @keyframes splash-fill {
   to {
-    fill: #ffffff;
+    fill: var(--btn-bg);
   }
 }
 
@@ -152,13 +163,13 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
   font-size: 24px;
   font-weight: 700;
   letter-spacing: 0.14em;
-  color: #ffffff;
+  color: var(--ink);
 }
 
 .splash__name-en {
   font-size: 12px;
   letter-spacing: 0.3em;
-  color: color-mix(in srgb, #ffffff 65%, transparent);
+  color: var(--ink-faint);
 }
 
 @keyframes splash-rise {
@@ -168,12 +179,46 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
   }
 }
 
+/* 今日名言（副色小标线 + 名句 + 作者） */
+.splash__quote {
+  margin: 30px 0 0;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: splash-rise 0.55s ease-out 1.75s forwards;
+}
+
+.splash__quote::before {
+  content: '';
+  display: block;
+  width: 26px;
+  height: 2px;
+  margin: 0 auto 14px;
+  background: var(--companion);
+  border-radius: 1px;
+}
+
+.splash__quote blockquote {
+  margin: 0;
+  max-width: 460px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--ink-secondary);
+}
+
+.splash__quote figcaption {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+}
+
+/* 进度细线 */
 .splash__bar {
-  margin-top: 26px;
+  margin-top: 30px;
   width: 120px;
   height: 2px;
   border-radius: 1px;
-  background: color-mix(in srgb, #ffffff 25%, transparent);
+  background: var(--rule);
   overflow: hidden;
 }
 
@@ -182,9 +227,9 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
   height: 100%;
   width: 100%;
   border-radius: 1px;
-  background: #ffffff;
+  background: var(--accent);
   transform-origin: left;
-  animation: splash-load 1.6s ease-in-out forwards;
+  animation: splash-load 2.7s ease-in-out forwards;
 }
 
 @keyframes splash-load {
@@ -198,7 +243,7 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
 
 .splash__error {
   margin-top: 22px;
-  max-width: 420px;
+  max-width: 460px;
   text-align: center;
   animation: splash-rise 0.4s ease-out;
 }
@@ -207,23 +252,22 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
   margin: 0 0 12px;
   font-size: 13px;
   line-height: 1.6;
-  color: #ffffff;
-  opacity: 0.9;
+  color: var(--negative);
 }
 
 .splash__retry {
   height: 32px;
   padding: 0 22px;
-  border: 1px solid #ffffff;
+  border: 1px solid var(--accent);
   border-radius: var(--radius-control);
   background: transparent;
-  color: #ffffff;
+  color: var(--accent-ink);
   font-size: 13px;
   cursor: pointer;
 }
 
 .splash__retry:hover {
-  background: color-mix(in srgb, #ffffff 15%, transparent);
+  background: var(--accent-soft);
 }
 
 /* 动效减弱：跳过编排，只保留快速淡出 */
@@ -231,6 +275,7 @@ watch([() => store.initialized, () => store.connectionError, minDone], () => {
   .splash__logo-frame,
   .splash__logo-glyph,
   .splash__name,
+  .splash__quote,
   .splash__bar-fill {
     animation-duration: 0.01ms !important;
     animation-delay: 0ms !important;
