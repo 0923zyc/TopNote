@@ -355,3 +355,7 @@
 - **TN 字标**：侧栏/启动屏 SVG 字标、favicon.svg 全部换为圆角方 + 800 重量 "TN"（紧排），仿 ZCode Z 的单字母标风格
 - **真 .ico 重制**：画布渲染 256/32/16 三档 TN PNG → 手写 ICO 容器 → favicon.ico + icon.ico；桌面快捷方式重建为 **TopNote.lnk**（自定义图标）
 - 生产构建通过、数据迁移完成、旧快捷方式清理
+
+### 补充：快捷方式图标缓存
+- 用户反馈桌面 TopNote.lnk 仍显示旧"拾"图标 → Windows 图标缓存（lnk 创建时 icon.ico 还是旧内容）
+- 修复：icon.ico 复制为独立路径 `TopNote.ico` → 重建 lnk 指向新路径（新缓存键立即生效）+ 网页 favicon 链接加 ?v=2 穿透浏览器缓存
